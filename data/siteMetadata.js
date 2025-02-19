@@ -13,11 +13,7 @@ const siteMetadata = {
   mastodon: 'https://mastodon.social/@mastodonuser',
   email: 'address@yoursite.com',
   github: 'https://github.com',
-  x: 'https://twitter.com/x',
-  // twitter: 'https://twitter.com/Twitter',
-  youtube: 'https://youtube.com',
   linkedin: 'https://www.linkedin.com',
-  medium: 'https://medium.com',
   locale: 'en-US',
   // set to true if you want a navbar fixed to the top
   stickyNav: false,
