@@ -3,7 +3,7 @@ const siteMetadata = {
   title: 'Thanesh P.',
   author: 'Thanesh P.',
   headerTitle: 'Thanesh P.',
-  description: 'A blog created with Next.js and Tailwind.css',
+  description: 'My highly opinionated thoughts on technology.',
   language: 'en-us',
   theme: 'system', // system, dark or light
   siteUrl: 'https://tailwind-nextjs-starter-blog.vercel.app',
