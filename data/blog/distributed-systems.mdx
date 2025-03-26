@@ -3,18 +3,22 @@ title: Distributed Systems
 date: '2025-03-21'
 tags: ['distributed systems', 'sre']
 draft: true
-summary: The idea and core concepts behind distributed systems.
+summary: I've been thinking a lot about distributed systems lately, and how they relate to modern application architectures and cloud-native technologies.
 ---
+
+I've been thinking a lot about distributed systems lately, and how they relate to modern application architectures and cloud-native technologies.
+
+In this post, I'll share some of my thoughts on the subject.
+
+## What makes a system distributed?
 
 Distributed systems are a type of system where the components are distributed across multiple machines.
 
 The core premise of a distributed system is to enable scalability, fault-tolerance, resource utilization.
 
-## What makes a system distributed?
-
 A system is considered distributed if it meets the following criteria:
 
-- The system is composed of multiple independent components.
+- The system is compbosed of multiple independent components.
 - The components are distributed across multiple machines.
 - The components are loosely coupled and can operate independently. 
 
@@ -24,15 +28,13 @@ An example of a distributed system is Kubernetes or Apache Kafka. I.e. where the
 
 The core goals of a distributed system are:
 
-- Fault-tolerance
-- Scalability
-- Resource utilization
+1. Fault-tolerance
+2. Scalability
+3. Resource utilization
 
 ### Fault-tolerance
 
 Fault-tolerance is the ability of a system to continue operating even in the presence of faults, i.e. where some components are not working as expected.
-
-In Kubernetes, this may be a node that is not responding, or a pod that is not working as expected.
 
 Fault-tolerance is generally measure in terms of availability, i.e. fraction of the time that the system is operational.
 
@@ -42,32 +44,41 @@ Fault-tolerance is generally measure in terms of availability, i.e. fraction of 
 
 When designing a distributed system, we need to consider the following:
 
-- Service Level Objectives (SLOs)
-- Service Level Agreements (SLAs)
+- Service Level Objectives (SLOs) - What is the acceptable level of availability for the system?
+- Service Level Agreements (SLAs) - What is the agreement between the system and the users?
+
+> We can think of availabily zones in a cloud environment as a way to achieve fault-tolerance; whereby if one zone goes down, the system can continue to operate in another zone.
 
 ## Scalability
 
 Scalability is the ability of a system to handle an increasing amount of work, or load, by adding more resources based on the demand.
 
-In a distributed system, we can scale horizontally by adding more machines, or vertically by adding more resources to the existing machines.
+In a distributed system, there are two types of scalability:
 
-We may scale horizontally when we have a large number of users, or when we have a large amount of data to process.
+- Horizontal scalability (scaling out)
+- Vertical scalability (scaling up)
 
-We may scale vertically when we have a large amount of data to process, or when an application is CPU or memory bound.
+Horizontal scalability is achieved by adding more machines to the system, while vertical scalability is achieved by adding more resources to the existing machines.
+
+> In a cloud environment, scalability should be an automatic process, whereby the system can automatically scale out or scale up based on the demand.
 
 ## Resource utilization
 
 Resource utilization is the ability of a system to use resources efficiently.
 
-In a distributed system, we can use resources efficiently by distributing the work across multiple machines.
+In a distributed system, we can use resources efficiently by distributing the work across multiple machines and dividing the workload based on the functional boundaries of the system.
 
-Instead of having a single monolithic application, we can have multiple smaller applications that each handle a specific part of the workload.
+This approach allows for more efficient use of resources, as we can allocate resources based on the demand for each specific part of system.
 
-This way we can have a more efficient use of resources, by spreading the load across multiple machines.
+As an added benefit, this approach may also reduce SPOF (Single Point of Failure) and increase the overall availability of the system.
 
-This may also reduce SPOF (Single Point of Failure) and increase the overall availability of the system.
+> We can think of a microservice architecture as a way to achieve resource utilization, whereby we can allocate resources for each specific part of the system.
 
 ## Challenges of Distributed Systems
+
+
+
+
 
 Distributed systems are complex, and there are many challenges to consider when designing and building them.
 
