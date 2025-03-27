@@ -8,29 +8,31 @@ summary: I've been thinking a lot about distributed systems lately, and how they
 
 I've been thinking a lot about distributed systems lately, and how they relate to modern application architectures and cloud-native technologies.
 
-In this post, I'll share some of my thoughts on the subject.
+The whole concept of distributed systems piqued my interest once I started learning about Kubernetes and what the system aims to achieve.
+
+From my perspective, the objectives of a distributed system can be boiled down to achiveing: fault-tolerance, scalability and resource utilization - which in turn relates to the some of the benefits of using cloud technologies.
+
+In this post, I'll be sharing some of my current thoughts around these objectives and distributed systems more broadly.
 
 ## What makes a system distributed?
 
-Distributed systems are a type of system where the components are distributed across multiple machines.
+I think it's important to firstly define what makes a system distributed.
 
-The core premise of a distributed system is to enable scalability, fault-tolerance, resource utilization.
+At a high level, a distributed system is a system where the components are distributed across multiple machines.
 
-A system is considered distributed if it meets the following criteria:
+A system is typically considered distributed if it meets the following criteria:
 
-- The system is compbosed of multiple independent components.
+- The system is composed of multiple independent components.
 - The components are distributed across multiple machines.
 - The components are loosely coupled and can operate independently. 
 
-An example of a distributed system is Kubernetes or Apache Kafka. I.e. where there are multiple nodes (machines) that are working together to achieve a common goal, managed by a central authority.
+Practical examples of distributes systems can be Kubernetes or Apache Kafka. I.e. where there are multiple nodes that are working together to achieve a common goal, managed by a central authority.
+
+The cloud or cloud technologies can also be thought of as a distributed system, whereby there are datacenters located across the globe segmented into regions and availability zones, each working independently but connected together to form a global system.
 
 ## Goals of Distributed Systems
 
-The core goals of a distributed system are:
-
-1. Fault-tolerance
-2. Scalability
-3. Resource utilization
+Now that we've defined what makes a system distributed, we can start to think about the problems that it aims to solve.
 
 ### Fault-tolerance
 
@@ -42,27 +44,27 @@ Fault-tolerance is generally measure in terms of availability, i.e. fraction of 
 - 99.99% availability -> 5 minutes of downtime per month
 - 99.999% availability -> 31 seconds of downtime per month  
 
-When designing a distributed system, we need to consider the following:
+When designing a distributed system, we typically need to consider the following:
 
 - Service Level Objectives (SLOs) - What is the acceptable level of availability for the system?
 - Service Level Agreements (SLAs) - What is the agreement between the system and the users?
 
-> We can think of availabily zones in a cloud environment as a way to achieve fault-tolerance; whereby if one zone goes down, the system can continue to operate in another zone.
+We can think of availabily zones in a cloud environment as a way to achieve fault-tolerance; whereby if one zone goes down, the system can continue to operate in another zone.
 
-## Scalability
+### Scalability
 
 Scalability is the ability of a system to handle an increasing amount of work, or load, by adding more resources based on the demand.
 
-In a distributed system, there are two types of scalability:
+In a distributed system, there are typically two types of scalability:
 
 - Horizontal scalability (scaling out)
 - Vertical scalability (scaling up)
 
 Horizontal scalability is achieved by adding more machines to the system, while vertical scalability is achieved by adding more resources to the existing machines.
 
-> In a cloud environment, scalability should be an automatic process, whereby the system can automatically scale out or scale up based on the demand.
+When we think about designing a distributed system, our focus should be on ensuring that the service is able to scale automatically based on the demand. Typically, we may bake in some additional rules such as: minimum number of instance, or CPU/memory thresholds.
 
-## Resource utilization
+### Resource utilization
 
 Resource utilization is the ability of a system to use resources efficiently.
 
@@ -72,14 +74,10 @@ This approach allows for more efficient use of resources, as we can allocate res
 
 As an added benefit, this approach may also reduce SPOF (Single Point of Failure) and increase the overall availability of the system.
 
-> We can think of a microservice architecture as a way to achieve resource utilization, whereby we can allocate resources for each specific part of the system.
+When designing a distibuted system, we can think of allocating resources based on their function, and/or expected usage, i.e. reserving more resources for more components with greater demands and vice versa.
 
-## Challenges of Distributed Systems
+## Closing thoughts
 
+In this post, I touched on some very high level concepts of distributed systems, which I can wholeheartedly say does not even scratch the surface.
 
-
-
-
-Distributed systems are complex, and there are many challenges to consider when designing and building them.
-
-One of the main challenges is maintaining consistency, i.e. how to ensure that all the components of the system are working together in a consistent way.
+Distributed systems is truly a fascinating topic, with many intracies which can take a lifetime to uncover - so is to say that I may share some deeper thoughts in future posts.
