@@ -1,6 +1,6 @@
 ---
 title: Distributed Systems
-date: '2025-03-21'
+date: '2025-03-28'
 tags: ['distributed systems', 'sre']
 draft: true
 summary: I've been thinking a lot about distributed systems lately, and how they relate to modern application architectures and cloud-native technologies.
@@ -8,9 +8,9 @@ summary: I've been thinking a lot about distributed systems lately, and how they
 
 I've been thinking a lot about distributed systems lately, and how they relate to modern application architectures and cloud-native technologies.
 
-The whole concept of distributed systems piqued my interest once I started learning about Kubernetes and what the system aims to achieve.
+The whole concept of distributed systems piqued my interest once I started learning about Kubernetes and what the technology aims to achieve.
 
-From my perspective, the objectives of a distributed system can be boiled down to achiveing: fault-tolerance, scalability and resource utilization - which in turn relates to the some of the benefits of using cloud technologies.
+From my perspective, the objectives of a distributed system can simply be boiled down to achieving the following: **fault-tolerance**, **scalability** and **resource utilization** - which if we think about it relates to some of the proposed benefits of using cloud technologies.
 
 In this post, I'll be sharing some of my current thoughts around these objectives and distributed systems more broadly.
 
@@ -26,34 +26,34 @@ A system is typically considered distributed if it meets the following criteria:
 - The components are distributed across multiple machines.
 - The components are loosely coupled and can operate independently. 
 
-Practical examples of distributes systems can be Kubernetes or Apache Kafka. I.e. where there are multiple nodes that are working together to achieve a common goal, managed by a central authority.
+We can think of practical examples of distributed systems as Kubernetes or Apache Kafka, i.e. where there are multiple nodes that are working together to achieve a common goal, managed by a central authority.
 
-The cloud or cloud technologies can also be thought of as a distributed system, whereby there are datacenters located across the globe segmented into regions and availability zones, each working independently but connected together to form a global system.
+The cloud or cloud technologies can also be thought of as a distributed system, whereby there are datacenters located across the globe segmented into regions and availability zones; each working independently but connected together to form a global system.
 
 ## Goals of Distributed Systems
 
-Now that we've defined what makes a system distributed, we can start to think about the problems that it aims to solve.
+Now that we've defined what makes a system distributed, we can start to think about the problems it aims to solve.
 
-### Fault-tolerance
+### 1. Fault-tolerance
 
 Fault-tolerance is the ability of a system to continue operating even in the presence of faults, i.e. where some components are not working as expected.
 
 Fault-tolerance is generally measure in terms of availability, i.e. fraction of the time that the system is operational.
 
-- 99.9% availability -> 1 minute of downtime per week
-- 99.99% availability -> 5 minutes of downtime per month
-- 99.999% availability -> 31 seconds of downtime per month  
+- 99.9% availability (3 nines) -> 10 minutes of downtime per week
+- 99.99% availability (4 nines) -> 1 minutes of downtime per week
+- 99.999% availability (5 nines) -> 6 seconds of downtime per week
 
 When designing a distributed system, we typically need to consider the following:
 
-- Service Level Objectives (SLOs) - What is the acceptable level of availability for the system?
-- Service Level Agreements (SLAs) - What is the agreement between the system and the users?
+- **Service Level Objectives** (SLOs) - What is the acceptable level of availability for the system?
+- **Service Level Agreements** (SLAs) - What is the agreement between the system and the users?
 
-We can think of availabily zones in a cloud environment as a way to achieve fault-tolerance; whereby if one zone goes down, the system can continue to operate in another zone.
+We can think of availability zones in a cloud environment as a way of achieving fault-tolerance; whereby if one zone within a region goes down, the system can continue to operate predictably in another zone.
 
-### Scalability
+### 2. Scalability
 
-Scalability is the ability of a system to handle an increasing amount of work, or load, by adding more resources based on the demand.
+Scalability is the ability of a system to handle an increasing amount of work, or load, by adding more resources based on demand.
 
 In a distributed system, there are typically two types of scalability:
 
@@ -64,20 +64,20 @@ Horizontal scalability is achieved by adding more machines to the system, while 
 
 When we think about designing a distributed system, our focus should be on ensuring that the service is able to scale automatically based on the demand. Typically, we may bake in some additional rules such as: minimum number of instance, or CPU/memory thresholds.
 
-### Resource utilization
+### 3. Resource utilization
 
 Resource utilization is the ability of a system to use resources efficiently.
 
-In a distributed system, we can use resources efficiently by distributing the work across multiple machines and dividing the workload based on the functional boundaries of the system.
+In a distibuted system, we can use resources efficiently by distributing the work across multiple machines and segmenting the workload based on the functional boundaries of the system.
 
-This approach allows for more efficient use of resources, as we can allocate resources based on the demand for each specific part of system.
+More practically, we can think of a microservices architecture where different components of the system utilize different cloud resources based on their specific needs. For example, compute-intensive services might run on Kubernetes clusters, data-heavy services might use managed databases, and caching layers might leverage in-memory stores like Redis.
 
-As an added benefit, this approach may also reduce SPOF (Single Point of Failure) and increase the overall availability of the system.
+This approach allows for more efficient use of resources, as we can allocate resources based on the demands of each specific part of system.
 
-When designing a distibuted system, we can think of allocating resources based on their function, and/or expected usage, i.e. reserving more resources for more components with greater demands and vice versa.
+When designing a distibuted system, we can also think of allocating resources based on their function, and/or expected usage, i.e. reserving more resources for components with greater demands and vice versa.
 
 ## Closing thoughts
 
-In this post, I touched on some very high level concepts of distributed systems, which I can wholeheartedly say does not even scratch the surface.
+In this post, I touched on some very high level concepts of distributed systems - which I can confidently say barely scratches the surface.
 
-Distributed systems is truly a fascinating topic, with many intracies which can take a lifetime to uncover - so is to say that I may share some deeper thoughts in future posts.
+Distributed systems is truly a fascinating topic, with many intracies that could honestly take a lifetime to uncover - so is to say that I may share some deeper thoughts in the future...
