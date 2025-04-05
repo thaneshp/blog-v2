@@ -6,8 +6,8 @@ const siteMetadata = {
   description: 'My highly opinionated thoughts on technology.',
   language: 'en-us',
   theme: 'system', // system, dark or light
-  siteUrl: 'https://tailwind-nextjs-starter-blog.vercel.app',
-  siteRepo: 'https://github.com/timlrx/tailwind-nextjs-starter-blog',
+  siteUrl: 'https://www.thanesh.org/',
+  siteRepo: 'https://github.com/thaneshp/blog-v2',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/logo.png`,
   socialBanner: `${process.env.BASE_PATH || ''}/static/images/twitter-card.png`,
   email: 'thanesh.pannirselvam@gmail.com',
