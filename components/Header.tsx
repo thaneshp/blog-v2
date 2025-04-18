@@ -7,7 +7,6 @@ import MobileNav from './MobileNav'
 import ThemeSwitch from './ThemeSwitch'
 import SearchButton from './SearchButton'
 import { usePathname } from 'next/navigation'
-import { getTitle } from './DynamicTitle'
 
 const Header = () => {
   const pathname = usePathname()
@@ -16,13 +15,19 @@ const Header = () => {
     headerClass += ' sticky top-0 z-50'
   }
 
+  const getTitle = () => {
+    if (pathname === '/') return `${siteMetadata.headerTitle} ~ $`
+    const path = pathname.split('/')[1]
+    return `${siteMetadata.headerTitle} ~/${path} $`
+  }
+
   return (
     <header className={headerClass}>
       <Link href="/" aria-label={siteMetadata.headerTitle}>
         <div className="flex items-center justify-between">
           {typeof siteMetadata.headerTitle === 'string' ? (
             <div className="hidden h-6 text-2xl font-mono font-semibold sm:block">
-              {getTitle(pathname)}
+              {getTitle()}
             </div>
           ) : (
             siteMetadata.headerTitle
