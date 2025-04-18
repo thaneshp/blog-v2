@@ -1,8 +1,8 @@
 /** @type {import("pliny/config").PlinyConfig } */
 const siteMetadata = {
-  title: 'Thanesh P.',
+  title: 'thaneshp',
   author: 'Thanesh P.',
-  headerTitle: 'Thanesh P.',
+  headerTitle: 'thaneshp',
   description: 'My highly opinionated thoughts on technology.',
   language: 'en-us',
   theme: 'system', // system, dark or light
