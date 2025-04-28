@@ -5,7 +5,7 @@ const siteMetadata = {
   headerTitle: 'thaneshp',
   description: 'My highly opinionated thoughts on technology.',
   language: 'en-us',
-  theme: 'system', // system, dark or light
+  theme: 'light', // system, dark or light
   siteUrl: 'https://www.thanesh.org/',
   siteRepo: 'https://github.com/thaneshp/blog-v2',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/logo.png`,
