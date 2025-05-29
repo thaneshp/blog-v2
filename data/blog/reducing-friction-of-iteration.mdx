@@ -14,13 +14,13 @@ To ensure that responses are accurate, requires a process of iteration on differ
 
 We want to make iterating on model and system prompts as seamless as possible, so that it is quicker to understand whether the change had any impact.
 
-This blog is about how you can design your AI application by de-coupling the model and system prompt implementation so that it becomes easier to iterate on.
+This blog is about how you can design your AI application by decoupling the model and system prompt implementation so that it becomes easier to iterate on.
 
 ---
 
 ## Model
 
-For de-coupling the model, I utilised the adapter design pattern, commonly referenced in Object-Oriented programming. 
+For decoupling the model, I utilised the adapter design pattern, commonly referenced in Object-Oriented programming. 
 
 The main issue it solves is defining a unified interface for making requests to models, i.e. whereby different models have different method/function calls.
 
@@ -74,8 +74,8 @@ System Prompts live alongside the codebase, in a directory structure that is dec
 .
 prompts/
 └── system/
-    ├── translate_to_mcp_command_simple.jinja
-    └── translate_to_mcp_command_explicit.jinja
+    ├── 01.jinja
+    └── 02.jinja
 ```
 
 **Utility Function to Load System Prompts**
@@ -102,11 +102,11 @@ Having abstracted both the model and system prompt implementations, we can now i
 
 The framework which I used for this was [DeepEval](https://deepeval.com/), which is a tool used to unit-testing and evaluating AI applications.
 
-For use-case, I wanted to test `gemma3:4b` against  `gpt4-turbo` and evaluate the differences based on two separate system prompts.
+For my use-case, I wanted to test `gemma3:4b` against  `gpt4-turbo` and evaluate the differences based on two separate system prompts.
 
 With the abstractions above, this becomes as simple as specifying the code below.
 
-**Config File for DeepEval**
+**Config File for DeepEval Testing**
 
 ```python
 import os
@@ -123,7 +123,7 @@ MODEL_ADAPTERS = [
 ]
 ```
 
-Whilst this is just a matter of 4 combinations, one could easily extend the same config file to add further models and system prompts as necessary. Which gives you flexibility to try out different techniques quickly at the pace in which AI is moving today.
+Whilst this is just a matter of 4 combinations, one could easily extend the same config file to add further models and system prompts as necessary.
 
 ---
 
