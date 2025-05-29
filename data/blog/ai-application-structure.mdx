@@ -1,17 +1,143 @@
 ---
-title: Structure for easily iterating on model and system prompts
+title: Make it easy to iterate on model and system prompts
 date: '2025-05-30'
 tags: ['AI', 'LLMs', 'MCP', 'Python']
 draft: true
-summary: Thoughts on how to structure an AI application for easily iterating on model and system prompts based on my experience of building an MCP client.
+summary: How to reduce friction when iterating on models and system prompts.
 ---
 
+Recently, I’ve been building a [MCP client for interacting with Google Cloud](https://github.com/thaneshp/gcp-terminal-copilot) using natural language queries.
+
+The quality (i.e., correctness) of responses matters a lot in this context, as commands given by users need to map to a single tool call provided by the MCP Server.
+
+To ensure that responses are accurate, requires a process of iteration on different models and system prompts for evaluating whether a particular change has moved the needle.
+
+We want to make iterating on model and system prompts as seamless as possible, so that it is quicker to understand whether the change had any impact.
+
+This blog is about how you can design your AI application by de-coupling the model and system prompt implementation so that it becomes easier to iterate on.
+
+---
 
 ## Model
 
+For de-coupling the model, I utilised the adapter design pattern, commonly referenced in Object-Oriented programming. 
+
+The main issue it solves is defining a unified interface for making requests to models, i.e. whereby different models have different method/function calls.
+
+As seen below, I have created two model adapters, with the `query ()` function which performs the underlying model call. By adopting this pattern, we can easily add new models by creating a new model class, implementing the `query()` method, and updating the environment’s file for usage.
+
+```python
+class OllamaAdapter:
+    def __init__(self, host, model_name):
+        self.model_name = model_name
+        self.host = host
+
+    async def query(self, messages):
+        # query implementation goes here
+
+
+class OpenAIAdapter:
+    def __init__(self, api_key, model_name: str = "gpt-3.5-turbo"):
+        self.model_name = model_name
+        self.api_key = api_key
+        self.client = OpenAI(api_key=api_key)
+
+    async def query(self, messages):
+        # query implementation goes here
+
+
+class ModelAdapter:
+    def __init__(self, model_adapter):
+        self.model_adapter = model_adapter
+
+    def query(self, messages):
+        return self.model_adapter.query(messages)
+```
+
+If you’d like to read more on the adapter pattern, you can do so [here](https://refactoring.guru/design-patterns/adapter).
+
+---
+
 ## System Prompts
+
+The first step to decoupling System Prompts is to think about them as any other piece of code, i.e., maintainable, version controlled and adaptable.
+
+This was definitely a mindset shift for me, but it made sense once I saw the impact that different words had on the output.
+
+More practically, decoupling System Prompts meant templating each prompt, and adding it into its own directory - loaded in as required by a utility function.
+
+**System Prompts Directory Structure**
+
+System Prompts live alongside the codebase, in a directory structure that is decoupled from the code itself.
+
+```bash
+.
+prompts/
+└── system/
+    ├── translate_to_mcp_command_simple.jinja
+    └── translate_to_mcp_command_explicit.jinja
+```
+
+**Utility Function to Load System Prompts**
+
+A utility function is used to load the system prompts from the directory, to be consumed by the application.
+
+```python
+def process_template(template_file: str, data: dict[str, Any]) -> str:
+    jinja_env = Environment(
+        loader=FileSystemLoader(searchpath="prompts/system"),
+        autoescape=select_autoescape(),
+    )
+    template = jinja_env.get_template(template_file)
+    return template.render(**data)
+```
+
+New system prompts can be added to the `prompts/system` directory and updated into the environment’s file to be used by the application.
+
+---
 
 ## Evaluation
 
+Having abstracted both the model and system prompt implementations, we can now iterate on them far more easily using automated testing.
+
+The framework which I used for this was [DeepEval](https://deepeval.com/), which is a tool used to unit-testing and evaluating AI applications.
+
+For use-case, I wanted to test `gemma3:4b` against  `gpt4-turbo` and evaluate the differences based on two separate system prompts.
+
+With the abstractions above, this becomes as simple as specifying the code below.
+
+**Config File for DeepEval**
+
+```python
+import os
+from adapter import OllamaAdapter, OpenAIAdapter
+
+SYSTEM_PROMPTS = ["01.jinja", "02.jinja"]
+
+MODEL_ADAPTERS = [
+    (OllamaAdapter, {"host": "http://localhost:11434", "model_name": "gemma3:4b"}),
+    (
+        OpenAIAdapter,
+        {"api_key": os.environ.get("OPENAI_API_KEY"), "model_name": "gpt-4-turbo"},
+    ),
+]
+```
+
+Whilst this is just a matter of 4 combinations, one could easily extend the same config file to add further models and system prompts as necessary. Which gives you flexibility to try out different techniques quickly at the pace in which AI is moving today.
+
+---
+
 ## Final Thoughts
 
+The pace at which new techniques, or models are coming out, means that we have to keep our applications flexible to change and adaptation. We want to test out the latest models and understand how they perform compared to our previous assumptions.
+
+I ran DeepEval against the combination I mentioned above, and the results were:
+
+```bash
+Model: gemma3:4b, System Prompt: 01.jinja - Correctness (GEval): 61.54% pass rate
+Model: gemma3:4b, System Prompt: 02.jinja - Correctness (GEval): 38.46% pass rate
+Model: gpt-4-turbo, System Prompt: 01.jinja - Correctness (GEval): 84.62% pass rate
+Model: gpt-4-turbo, System Prompt: 02.jinja - Correctness (GEval): 92.31% pass rate
+```
+
+I don’t think it’s that surprising that `gpt-4-turbo` outperforms `gemma3:4b`, but I found it surprising to see that the `02.jinja` system prompt which performed better on the OpenAI model didn’t perform as well on `gemma3:4b`; meaning we can’t choose to optimize for either of model or system prompt in isolation.
