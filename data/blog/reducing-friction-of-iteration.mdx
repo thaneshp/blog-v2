@@ -2,29 +2,31 @@
 title: Make it easy to iterate on model and system prompts
 date: '2025-05-30'
 tags: ['AI', 'LLMs', 'MCP', 'Python']
-draft: true
+draft: false
 summary: How to reduce friction when iterating on models and system prompts.
 ---
 
 Recently, I’ve been building a [MCP client for interacting with Google Cloud](https://github.com/thaneshp/gcp-terminal-copilot) using natural language queries.
 
-The quality (i.e., correctness) of responses matters a lot in this context, as commands given by users need to map to a single tool call provided by the MCP Server.
+The quality (or "correctness") of responses matters a lot in this context, as commands given by users are translated directly into a single tool call then executed against their Google Cloud environment.
 
-To ensure that responses are accurate, requires a process of iteration on different models and system prompts for evaluating whether a particular change has moved the needle.
+To improve the quality of responses, requires a process of iteration on different models and system prompts for evaluating whether the change has moved the needle measured against a particular metric.
 
-We want to make iterating on model and system prompts as seamless as possible, so that it is quicker to understand whether the change had any impact.
-
-This blog is about how you can design your AI application by decoupling the model and system prompt implementation so that it becomes easier to iterate on.
+This blog lays out ideas for designing your AI application such that model and system prompts are decoupled from the underlying implementation, which in turn makes it easier to iterate on.
 
 ---
 
 ## Model
 
-For decoupling the model, I utilised the adapter design pattern, commonly referenced in Object-Oriented programming. 
+Say you want to integrate a mix of local (e.g. Ollama) and hosted (OpenAI, Anthropic, etc.) models in your application. 
 
-The main issue it solves is defining a unified interface for making requests to models, i.e. whereby different models have different method/function calls.
+The issue with this is that each model may have a unique interface, making it difficult to update the model call, each time you want to try out a different model.
 
-As seen below, I have created two model adapters, with the `query ()` function which performs the underlying model call. By adopting this pattern, we can easily add new models by creating a new model class, implementing the `query()` method, and updating the environment’s file for usage.
+For abstracting out the model, I came across the [adapter design pattern](https://refactoring.guru/design-patterns/adapter) - which is a pattern commonly used in Object-Oriented programming.
+
+The core premise is this: defining a unified interface for allowing your application to interact with each model consistently.
+
+Here's how I implemented it in my application: I created two model adapters with the `query ()` function that performs the underlying model call. If I need to add a new model, I can do so by creating a new model adapter and implementing the `query()` method.
 
 ```python
 class OllamaAdapter:
@@ -54,21 +56,28 @@ class ModelAdapter:
         return self.model_adapter.query(messages)
 ```
 
-If you’d like to read more on the adapter pattern, you can do so [here](https://refactoring.guru/design-patterns/adapter).
+Defining models in this way brings few advantages:
+- Easy to add/remove models without affecting underlying code
+- Caters for both local and hosted models
+- Straightforward to understand what models are used/available
+
+However, the main limitation to this approach is that: there is still some effort required to update the logic for determining which model to be called; i.e. deciding whether to call the Ollama or OpenAI model based on what has been specified in the `.env` file.
+
+In any case, it does simplify the feedback loop for model iteration which is the main purpose for this abstraction.
 
 ---
 
 ## System Prompts
 
-The first step to decoupling System Prompts is to think about them as any other piece of code, i.e., maintainable, version controlled and adaptable.
+The first step to decoupling system prompts is to think about them as any other piece of code, i.e., maintainable, version controlled and adaptable.
 
-This was definitely a mindset shift for me, but it made sense once I saw the impact that different words had on the output.
+This was definitely a mindset shift for me, but it made sense once I saw the impact that different words had on the model's output.
 
-More practically, decoupling System Prompts meant templating each prompt, and adding it into its own directory - loaded in as required by a utility function.
+More practically, I decoupled the system prompt by templatising them using [Jinja2](https://jinja.palletsprojects.com/en/stable/), and moving it into its own directory. Each prompt could then be loaded in as desired by utilising a helper function.
 
 **System Prompts Directory Structure**
 
-System Prompts live alongside the codebase, in a directory structure that is decoupled from the code itself.
+System prompts should live alongside the codebase, in a directory structure that is decoupled from the code itself.
 
 ```bash
 .
@@ -78,7 +87,7 @@ prompts/
     └── 02.jinja
 ```
 
-**Utility Function to Load System Prompts**
+**Utility Function to Load in System Prompts**
 
 A utility function is used to load the system prompts from the directory, to be consumed by the application.
 
@@ -100,13 +109,11 @@ New system prompts can be added to the `prompts/system` directory and updated in
 
 Having abstracted both the model and system prompt implementations, we can now iterate on them far more easily using automated testing.
 
-The framework which I used for this was [DeepEval](https://deepeval.com/), which is a tool used to unit-testing and evaluating AI applications.
+The framework which I used for this was [DeepEval](https://deepeval.com/), which is a tool used for unit-testing and evaluating AI applications.
 
-For my use-case, I wanted to test `gemma3:4b` against  `gpt4-turbo` and evaluate the differences based on two separate system prompts.
+For my use-case, I wanted to test `gemma3:4b` against `gpt4-turbo`, and evaluate the differences based on two separate system prompts.
 
-With the abstractions above, this becomes as simple as specifying the code below.
-
-**Config File for DeepEval Testing**
+With the abstractions above in place, I can specify a config file like below to run the tests against.
 
 ```python
 import os
@@ -123,7 +130,9 @@ MODEL_ADAPTERS = [
 ]
 ```
 
-Whilst this is just a matter of 4 combinations, one could easily extend the same config file to add further models and system prompts as necessary.
+**Keep in mind**, you will still need to implement your `deepeval` test code to iterate on these lists and generate the required test cases. However, it becomes far easier to extend your testing suite once this has been set up.
+
+You can check out how I've set this up [here](https://github.com/thaneshp/gcp-terminal-copilot/blob/main/tests/deepeval/test_command_translation.py).
 
 ---
 
@@ -140,4 +149,4 @@ Model: gpt-4-turbo, System Prompt: 01.jinja - Correctness (GEval): 84.62% pass r
 Model: gpt-4-turbo, System Prompt: 02.jinja - Correctness (GEval): 92.31% pass rate
 ```
 
-I don’t think it’s that surprising that `gpt-4-turbo` outperforms `gemma3:4b`, but I found it surprising to see that the `02.jinja` system prompt which performed better on the OpenAI model didn’t perform as well on `gemma3:4b`; meaning we can’t choose to optimize for either of model or system prompt in isolation.
+I don’t think it’s that surprising that `gpt-4-turbo` outperforms `gemma3:4b`, but I found it surprising to see that the `02.jinja` prompt which performed better on the OpenAI model didn’t perform as well on `gemma3:4b`; meaning we can’t choose to optimize for either of model or system prompt in isolation.
