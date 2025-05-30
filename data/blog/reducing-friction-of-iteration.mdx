@@ -10,7 +10,7 @@ Recently, I’ve been building a [MCP client for interacting with Google Cloud](
 
 The quality (or "correctness") of responses matters a lot in this context, as commands given by users are translated directly into a single tool call then executed against their Google Cloud environment.
 
-To improve the quality of responses, requires a process of iteration on different models and system prompts for evaluating whether the change has moved the needle measured against a particular metric.
+A process of iterating on different models and system prompts is required for improving the quality of responses. But, the question becomes: how do we know whether we're moving the needle?
 
 This blog lays out ideas for designing your AI application such that model and system prompts are decoupled from the underlying implementation, which in turn makes it easier to iterate on.
 
@@ -61,7 +61,7 @@ Defining models in this way brings few advantages:
 - Caters for both local and hosted models
 - Straightforward to understand what models are used/available
 
-However, the main limitation to this approach is that: there is still some effort required to update the logic for determining which model to be called; i.e. deciding whether to call the Ollama or OpenAI model based on what has been specified in the `.env` file.
+However, the main limitation to this approach is that there is still some effort required to update the logic for determining which model to be called; i.e. deciding whether to call the Ollama or OpenAI model based on what has been specified in the `.env` file.
 
 In any case, it does simplify the feedback loop for model iteration which is the main purpose for this abstraction.
 
@@ -138,9 +138,11 @@ You can check out how I've set this up [here](https://github.com/thaneshp/gcp-te
 
 ## Final Thoughts
 
-The pace at which new techniques, or models are coming out, means that we have to keep our applications flexible to change and adaptation. We want to test out the latest models and understand how they perform compared to our previous assumptions.
+There are many approaches I could have taken to achieve a similar outcome, but the key idea is to abstract out the model and system prompts so that they can be easily iterated on.
 
-I ran DeepEval against the combination I mentioned above, and the results were:
+This is especially important when we're at point in time where it feels like new models and techniques are coming out every second.
+
+I ran DeepEval against the combination I mentioned above, and the results were as below:
 
 ```bash
 Model: gemma3:4b, System Prompt: 01.jinja - Correctness (GEval): 61.54% pass rate
@@ -149,4 +151,6 @@ Model: gpt-4-turbo, System Prompt: 01.jinja - Correctness (GEval): 84.62% pass r
 Model: gpt-4-turbo, System Prompt: 02.jinja - Correctness (GEval): 92.31% pass rate
 ```
 
-I don’t think it’s that surprising that `gpt-4-turbo` outperforms `gemma3:4b`, but I found it surprising to see that the `02.jinja` prompt which performed better on the OpenAI model didn’t perform as well on `gemma3:4b`; meaning we can’t choose to optimize for either of model or system prompt in isolation.
+I don’t think it’s that surprising that `gpt-4-turbo` outperforms `gemma3:4b`, but I found it interesting to see that the `02.jinja` prompt which performed better on the OpenAI model didn’t perform as well on `gemma3:4b`; meaning we can’t choose to optimize for either of model or system prompt in isolation.
+
+**My take is**: the `02.jinja` prompt contains more granularity, which a larger model (like `gpt-4-turbo`) is able to better interpret and make sense of. Something to look into next...
