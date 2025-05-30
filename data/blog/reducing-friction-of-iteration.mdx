@@ -138,11 +138,11 @@ You can check out how I've set this up [here](https://github.com/thaneshp/gcp-te
 
 ## Final Thoughts
 
-There are many approaches I could have taken to achieve a similar outcome, but the key idea is to abstract out the model and system prompts so that they can be easily iterated on.
+There are many approaches I could have taken to achieve a similar outcome, but the key idea I want to get across is abstracting out the model and system prompts so that they can be easily iterated on.
 
-This is especially important when we're at point in time where it feels like new models and techniques are coming out every second.
+This is especially important right now, where it feels like new models and techniques are coming out every second.
 
-I ran DeepEval against the combination I mentioned above, and the results were as below:
+I ran DeepEval against the combination I mentioned above, and the results were as follows:
 
 ```bash
 Model: gemma3:4b, System Prompt: 01.jinja - Correctness (GEval): 61.54% pass rate
@@ -151,6 +151,6 @@ Model: gpt-4-turbo, System Prompt: 01.jinja - Correctness (GEval): 84.62% pass r
 Model: gpt-4-turbo, System Prompt: 02.jinja - Correctness (GEval): 92.31% pass rate
 ```
 
-I don’t think it’s that surprising that `gpt-4-turbo` outperforms `gemma3:4b`, but I found it interesting to see that the `02.jinja` prompt which performed better on the OpenAI model didn’t perform as well on `gemma3:4b`; meaning we can’t choose to optimize for either of model or system prompt in isolation.
+I don’t think it’s that surprising that `gpt-4-turbo` outperforms `gemma3:4b`, but I found it surprising to see that the `02.jinja` prompt which performed better on the OpenAI model didn’t perform as well on `gemma3:4b`; meaning we can’t choose to optimize for either of model or system prompt in isolation.
 
-**My take is**: the `02.jinja` prompt contains more granularity, which a larger model (like `gpt-4-turbo`) is able to better interpret and make sense of. Something to look into next...
+**My take is this**: the `02` prompt contains more granularity, which a larger model (like `gpt-4-turbo`) is able to better interpret and make sense of; as compared to a smaller model (like `gemma3:4b`). Nevertheless, it all comes at a cost...
