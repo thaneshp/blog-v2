@@ -1,6 +1,6 @@
 ---
-title: Make it easy to iterate on model and system prompts
-date: '2025-05-31'
+title: Make it easy to iterate on models and system prompts
+date: '2025-06-01'
 tags: ['AI', 'LLMs', 'MCP', 'Python']
 draft: false
 summary: How to reduce friction when iterating on models and system prompts.
@@ -12,11 +12,11 @@ The quality (or "correctness") of responses matters a lot in this context, as co
 
 A process of iterating on different models and system prompts is required for improving the quality of responses. But, the question becomes: how do we know whether we're moving the needle?
 
-This blog lays out ideas for designing an AI application such that model and system prompts are decoupled from the underlying implementation, which in turn makes it easier to iterate on.
+This blog lays out ideas for designing AI applications such that models and system prompts are decoupled from the underlying implementation, which in turn makes it easier to iterate on.
 
 ---
 
-## Model
+## Models
 
 Say you want to integrate a mix of local (e.g. Ollama) and hosted (e.g. OpenAI, Anthropic, etc.) models in your application. 
 
@@ -73,7 +73,7 @@ The first step to decoupling system prompts is to think about them as any other 
 
 This was definitely a mindset shift for me, but it made sense once I saw the impact that different words had on the model's output.
 
-More practically, I decoupled the system prompt by templatising them using [Jinja2](https://jinja.palletsprojects.com/en/stable/), and moving it into its own directory. Each prompt could then be loaded in as desired by utilising a helper function.
+More practically, I decoupled the system prompts by templatising them using [Jinja2](https://jinja.palletsprojects.com/en/stable/), and moving it into its own directory. Each prompt could then be loaded in as desired by utilising a helper function.
 
 **System Prompts Directory Structure**
 
@@ -138,9 +138,9 @@ You can check out how I've set this up [here](https://github.com/thaneshp/gcp-te
 
 ## Final Thoughts
 
-There are many approaches to achieve a similar outcome; but the key idea I want to get across is that abstracting out the model and system prompts enables us to easily iterate on them using automatation.
+There are many approaches to achieve a similar outcome; but the key idea I want to get across is that abstracting out the model and system prompt enables us to easily iterate on them using automatation.
 
-This is especially important right now, where it feels like new models are coming out every second.
+This is especially important right now, where it feels like new models are coming out virtually every second.
 
 I ran DeepEval against the combination I mentioned above, and the results were as follows:
 
@@ -151,6 +151,6 @@ Model: gpt-4-turbo, System Prompt: 01.jinja - Correctness (GEval): 84.62% pass r
 Model: gpt-4-turbo, System Prompt: 02.jinja - Correctness (GEval): 92.31% pass rate
 ```
 
-I don’t think it’s that surprising that `gpt-4-turbo` outperforms `gemma3:4b`, but I found it surprising to see that the `02.jinja` prompt which performed better on the OpenAI model didn’t perform as well on `gemma3:4b`; meaning we can’t choose to optimize for either of model or system prompts in isolation.
+I don’t think it’s that surprising that `gpt-4-turbo` outperforms `gemma3:4b`, but I found it surprising to see that the `02.jinja` prompt which performed better on the OpenAI model didn’t perform as well on `gemma3:4b`; meaning we can’t choose to optimize for either of models or system prompts in isolation.
 
 **My take is this**: the `02` prompt contains more granularity, which a larger model (like `gpt-4-turbo`) is able to better interpret and make sense of; as compared to a smaller model (like `gemma3:4b`). Nevertheless, it all comes at a cost...
