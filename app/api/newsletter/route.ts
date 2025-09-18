@@ -1,11 +1,16 @@
 import { NewsletterAPI } from 'pliny/newsletter'
 import siteMetadata from '@/data/siteMetadata'
-
 export const dynamic = 'force-static'
+import type { NextRequest, NextResponse } from 'next/server'
 
-const handler = NewsletterAPI({
-  // @ts-ignore
-  provider: siteMetadata.newsletter.provider,
-})
+type Handler = ((req: NextRequest) => Promise<NextResponse>) | undefined
+let GET: Handler, POST: Handler
+if (siteMetadata.newsletter && siteMetadata.newsletter.provider) {
+  const handler = NewsletterAPI({
+    provider: siteMetadata.newsletter.provider,
+  })
+  GET = handler
+  POST = handler
+}
 
-export { handler as GET, handler as POST }
+export { GET, POST }
