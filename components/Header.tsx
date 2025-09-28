@@ -28,9 +28,13 @@ const Header = () => {
           {typeof siteMetadata.headerTitle === 'string' ? (
             <>
               {/* Mobile: Show just the headerTitle */}
-              <div className="h-6 font-mono text-2xl font-semibold sm:hidden">{siteMetadata.headerTitle}</div>
+              <div className="h-6 font-mono text-2xl font-semibold sm:hidden">
+                {siteMetadata.headerTitle}
+              </div>
               {/* Desktop: Show full terminal prompt */}
-              <div className="hidden h-6 font-mono text-2xl font-semibold sm:block">{getTitle()}</div>
+              <div className="hidden h-6 font-mono text-2xl font-semibold sm:block">
+                {getTitle()}
+              </div>
             </>
           ) : (
             siteMetadata.headerTitle
