@@ -13,7 +13,6 @@ const siteMetadata = {
   email: 'thanesh.pannirselvam@gmail.com',
   github: 'https://github.com/thaneshp',
   linkedin: 'https://www.linkedin.com/in/thanesh-pannirselvam',
-  x: 'https://x.com/thaneshp',
   locale: 'en-US',
   // set to true if you want a navbar fixed to the top
   stickyNav: false,
