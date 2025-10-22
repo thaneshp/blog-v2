@@ -5,7 +5,7 @@ const siteMetadata = {
   headerTitle: 'thaneshp',
   description: 'My highly opinionated thoughts on technology.',
   language: 'en-us',
-  theme: 'dark', // system, dark or light
+  theme: 'light', // system, dark or light
   siteUrl: 'https://www.thanesh.org/',
   siteRepo: 'https://github.com/thaneshp/blog-v2',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/logo.png`,
@@ -13,7 +13,6 @@ const siteMetadata = {
   email: 'thanesh.pannirselvam@gmail.com',
   github: 'https://github.com/thaneshp',
   linkedin: 'https://www.linkedin.com/in/thanesh-pannirselvam',
-  x: 'https://x.com/thaneshp',
   locale: 'en-US',
   // set to true if you want a navbar fixed to the top
   stickyNav: false,
