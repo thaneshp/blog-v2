@@ -1,7 +1,16 @@
+import { ReactNode } from 'react'
 import Image from './Image'
 import Link from './Link'
 
-const Card = ({ title, description, imgSrc, href }) => (
+interface CardProps {
+  title: string
+  description: string
+  imgSrc?: string
+  href?: string
+  meta?: ReactNode
+}
+
+const Card = ({ title, description, imgSrc, href, meta }: CardProps) => (
   <div className="md max-w-[544px] p-4 md:w-1/2">
     <div
       className={`${
@@ -39,6 +48,11 @@ const Card = ({ title, description, imgSrc, href }) => (
           )}
         </h2>
         <p className="prose mb-3 max-w-none text-gray-500 dark:text-gray-400">{description}</p>
+        {meta && (
+          <div className="mb-3 flex flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400">
+            {meta}
+          </div>
+        )}
         {href && (
           <Link
             href={href}
