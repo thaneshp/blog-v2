@@ -10,7 +10,7 @@ const siteMetadata = {
   siteRepo: 'https://github.com/thaneshp/blog-v2',
   siteLogo: `${process.env.BASE_PATH || ''}/static/images/logo.png`,
   socialBanner: `${process.env.BASE_PATH || ''}/static/images/twitter-card.png`,
-  email: 'thanesh.pannirselvam@gmail.com',
+  email: 'contact@thanesh.org',
   github: 'https://github.com/thaneshp',
   linkedin: 'https://www.linkedin.com/in/thanesh-pannirselvam',
   locale: 'en-US',
