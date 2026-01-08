@@ -1,7 +1,7 @@
 {
   "ai": 3,
-  "cloud": 1,
   "llms": 2,
   "mcp": 1,
-  "python": 1
+  "python": 1,
+  "cloud": 1
 }
