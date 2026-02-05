@@ -1,5 +1,5 @@
 ---
-title: Restrict topic auto-create on Google Managed Kafka
+title: Restrict topics from auto creating on Google Managed Kafka
 date: '2026-02-05'
 tags: ['Cloud', 'GCP', 'Terraform']
 draft: false
@@ -22,25 +22,60 @@ This is actually a default feature of Apache Kafka but is often not preferred as
 
 Essentially, there are resources which are created outside of Terraform, IaC or other form of configuration.
 
-
-
 ---
 
 ## Solution
 
-You can restrict auto creation of topics on Google Managed Kafka by creating a service account and applying an ACL rule that denies `ALL` operations for `allTopics`.
+You can restrict auto creation of topics on Google Managed Kafka by creating a service account and applying an ACL rule that denies `ALL` operations for `acl_id = "allTopics"`.
 
-By doing this, you are explicitly restricting any topics to be auto-created.
 
+export const Callout = ({ type = "info", children }) => {
+  const styles = {
+    info: {
+      border: "#3b82f6",
+      background: "#eff6ff"
+    },
+    warning: {
+      border: "#f59e0b",
+      background: "#fffbeb"
+    },
+    danger: {
+      border: "#ef4444",
+      background: "#fef2f2"
+    }
+  };
+
+  const style = styles[type];
+
+  return (
+    <div style={{
+      padding: "1rem",
+      borderLeft: `4px solid ${style.border}`,
+      backgroundColor: style.background,
+      borderRadius: "8px",
+      margin: "1.2rem 0"
+    }}>
+      {children}
+    </div>
+  );
+};
+
+
+<Callout type="info">
 **Why does this work?**
 
-Google Managed Kafka operates with `allow.everyone.if.no.acl.found` set to `true`.
+Google Managed Kafka operates with `allow.everyone.if.no.acl.found` property set to `true`.
 
-When no ACL is present for `allTopics`, then access is enabled by default. As soon as you apply an ACL to this resource, then access becomes restricted.
+When no ACL is present for `acl_id = "allTopics"`, then access is enabled by default. As soon as you apply an ACL to this resource, then access becomes restricted.
+
+You can read more about GMK's default access [here](https://docs.cloud.google.com/managed-service-for-apache-kafka/docs/access-control-kafka-acls#default-access).
+</Callout>
 
 ---
 
-## Impementation
+## Implementation
+
+The Terraform implementation looks something like below.
 
 ```HCL
 # Dummy service account used solely for applying the ACL rule
@@ -53,16 +88,18 @@ resource "google_service_account" "service_account" {
 resource "google_managed_kafka_acl" "example" {
   acl_id = "allTopics"
   cluster = google_managed_kafka_cluster.cluster.cluster_id
-  location = "us-central1"
+  location = "australia-southeast1"
 
-    acl_entries {
-        principal = "User:${google_service_account.service_account.email}"
-        permission_type = "DENY"
-        operation = "ALL"
-        host = "*"
-    }
+  acl_entries {
+    principal = "User:${google_service_account.service_account.email}"
+    permission_type = "DENY"
+    operation = "ALL"
+    host = "*"
+  }
 }
 ```
+
+Once you've applied it, you'll see an not authorised error when trying to publish to a non-existent topic.
 
 ---
 
