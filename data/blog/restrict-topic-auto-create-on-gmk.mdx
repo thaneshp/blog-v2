@@ -28,39 +28,6 @@ Essentially, there are resources which are created outside of Terraform, IaC or 
 
 You can restrict auto creation of topics on Google Managed Kafka by creating a service account and applying an ACL rule that denies `ALL` operations for `acl_id = "allTopics"`.
 
-
-export const Callout = ({ type = "info", children }) => {
-  const styles = {
-    info: {
-      border: "#3b82f6",
-      background: "#eff6ff"
-    },
-    warning: {
-      border: "#f59e0b",
-      background: "#fffbeb"
-    },
-    danger: {
-      border: "#ef4444",
-      background: "#fef2f2"
-    }
-  };
-
-  const style = styles[type];
-
-  return (
-    <div style={{
-      padding: "1rem",
-      borderLeft: `4px solid ${style.border}`,
-      backgroundColor: style.background,
-      borderRadius: "8px",
-      margin: "1.2rem 0"
-    }}>
-      {children}
-    </div>
-  );
-};
-
-
 <Callout type="info">
 **Why does this work?**
 
@@ -99,8 +66,5 @@ resource "google_managed_kafka_acl" "example" {
 }
 ```
 
-Once you've applied it, you'll see an not authorised error when trying to publish to a non-existent topic.
+Once you've applied it, you'll see an unauthorised error when trying to publish to a non-existent topic.
 
----
-
-## Conclusion
