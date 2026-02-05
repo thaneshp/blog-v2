@@ -1,8 +1,69 @@
 ---
-title: Prevent Auto Creation of Topics on Google Managed Kafka
+title: Restrict topic auto-create on Google Managed Kafka
 date: '2026-02-05'
-tags: ['Cloud', 'GCP']
+tags: ['Cloud', 'GCP', 'Terraform']
 draft: false
-summary: How to restrict auto-creation of topics on Google Managed Kafka.
+summary: How to restrict topics from auto creating on Google Managed Kafka.
 ---
 
+If you've used Google Managed Kafka (GMK), you might have notice there is no setting to disable auto creation of topics.
+
+Disabling auto creation of topics is managed by the property `auto.create.topics.enable` server-side property that Google Managed Kafka doesn't expose to users.
+
+Regardless, we can still restrict topics from auto creating by configuring ACL rules; which I explain below.
+
+---
+
+## Problem Statement
+
+Topics are automatically created when a client producers (or consumes) to Google Managed Kafka.
+
+This is actually a default feature of Apache Kafka but is often not preferred as it means topics aren't maintained in source control.
+
+Essentially, there are resources which are created outside of Terraform, IaC or other form of configuration.
+
+
+
+---
+
+## Solution
+
+You can restrict auto creation of topics on Google Managed Kafka by creating a service account and applying an ACL rule that denies `ALL` operations for `allTopics`.
+
+By doing this, you are explicitly restricting any topics to be auto-created.
+
+**Why does this work?**
+
+Google Managed Kafka operates with `allow.everyone.if.no.acl.found` set to `true`.
+
+When no ACL is present for `allTopics`, then access is enabled by default. As soon as you apply an ACL to this resource, then access becomes restricted.
+
+---
+
+## Impementation
+
+```HCL
+# Dummy service account used solely for applying the ACL rule
+resource "google_service_account" "service_account" {
+  account_id   = "service-account-id"
+  display_name = "Service Account"
+}
+
+# ACL rule to restrict auto creation of topics
+resource "google_managed_kafka_acl" "example" {
+  acl_id = "allTopics"
+  cluster = google_managed_kafka_cluster.cluster.cluster_id
+  location = "us-central1"
+
+    acl_entries {
+        principal = "User:${google_service_account.service_account.email}"
+        permission_type = "DENY"
+        operation = "ALL"
+        host = "*"
+    }
+}
+```
+
+---
+
+## Conclusion
