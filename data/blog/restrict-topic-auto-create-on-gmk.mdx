@@ -1,32 +1,42 @@
 ---
-title: Restrict topics from auto creating on Google Managed Kafka
-date: '2026-02-05'
+title: Restrict topics from auto-creating on Google Managed Kafka
+date: '2026-02-06'
 tags: ['Cloud', 'GCP', 'Terraform']
 draft: false
-summary: How to restrict topics from auto creating on Google Managed Kafka.
+summary: How to restrict topics from auto-creating on Google Managed Kafka (GMK).
 ---
 
-If you've used Google Managed Kafka (GMK), you might have notice there is no setting to disable auto creation of topics.
+If you’ve used Google Managed Kafka (GMK), you might have noticed there is no setting to disable auto-creation of topics.
 
-Disabling auto creation of topics is managed by the property `auto.create.topics.enable` server-side property that Google Managed Kafka doesn't expose to users.
+Disabling auto-creation of topics is managed by the property `auto.create.topics.enable` server-side property that Google Managed Kafka doesn’t expose to users.
 
-Regardless, we can still restrict topics from auto creating by configuring ACL rules; which I explain below.
+Regardless, we can still restrict topics from auto-creating by configuring ACL rules; which I explain below.
 
 ---
 
 ## Problem Statement
 
-Topics are automatically created when a client producers (or consumes) to Google Managed Kafka.
+Topics are automatically created when a client produces (or consumes) to Google Managed Kafka.
 
-This is actually a default feature of Apache Kafka but is often not preferred as it means topics aren't maintained in source control.
+This is actually a default feature of Apache Kafka, but it is often disabled as any client that has access to the cluster can create topics; which could have unintended behaviours.
 
-Essentially, there are resources which are created outside of Terraform, IaC or other form of configuration.
+In the recording below, you'll see that when I first tried to produce to a non-existent topic, it throws an error. However, after some time the message successfully publishes, creating a new topic.
+
+
+<Image
+  src="/static/images/restrict-topic-auto-create-on-gmk/Terminal.gif"
+  alt="Terminal session showing the unauthorized error when auto-creating topics"
+  width={624}
+  height={480}
+  unoptimized
+  className="rounded-md border border-gray-200"
+/>
 
 ---
 
 ## Solution
 
-You can restrict auto creation of topics on Google Managed Kafka by creating a service account and applying an ACL rule that denies `ALL` operations for `acl_id = "allTopics"`.
+You can restrict auto-creation of topics on Google Managed Kafka by creating a service account and applying an ACL rule that denies `ALL` operations for `acl_id = “allTopics”`.
 
 <Callout type="info">
 **Why does this work?**
@@ -67,4 +77,3 @@ resource "google_managed_kafka_acl" "example" {
 ```
 
 Once you've applied it, you'll see an unauthorised error when trying to publish to a non-existent topic.
-
