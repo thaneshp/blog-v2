@@ -24,7 +24,7 @@ In the recording below, you'll see that when I first tried to produce to a non-e
 
 
 <Image
-  src="/static/images/restrict-topic-auto-create-on-gmk/Terminal.gif"
+  src="/static/images/restrict-topic-auto-create-on-gmk/demo-1.gif"
   alt="Terminal session showing the unauthorized error when auto-creating topics"
   width={624}
   height={480}
@@ -77,3 +77,12 @@ resource "google_managed_kafka_acl" "example" {
 ```
 
 Once you've applied it, you'll see an unauthorised error when trying to publish to a non-existent topic.
+
+<Image
+  src="/static/images/restrict-topic-auto-create-on-gmk/demo-2.gif"
+  alt="Terminal session showing the unauthorized error when auto-creating topics"
+  width={624}
+  height={480}
+  unoptimized
+  className="rounded-md border border-gray-200"
+/>

@@ -1,9 +1,9 @@
 {
-  "cloud": 2,
-  "gcp": 1,
-  "terraform": 1,
   "ai": 3,
   "llms": 2,
   "mcp": 1,
-  "python": 1
+  "python": 1,
+  "cloud": 2,
+  "gcp": 1,
+  "terraform": 1
 }
