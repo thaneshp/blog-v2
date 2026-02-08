@@ -1,6 +1,6 @@
 ---
 title: Restrict topics from auto-creating on Google Managed Kafka
-date: '2026-02-06'
+date: '2026-02-08'
 tags: ['Cloud', 'GCP', 'Terraform']
 draft: false
 summary: How to restrict topics from auto-creating on Google Managed Kafka (GMK).
@@ -14,14 +14,13 @@ Regardless, we can still restrict topics from auto-creating by configuring ACL r
 
 ---
 
-## Problem Statement
+## Problem
 
 Topics are automatically created when a client produces (or consumes) to Google Managed Kafka.
 
 This is actually a default feature of Apache Kafka, but it is often disabled as any client that has access to the cluster can create topics; which could have unintended behaviours.
 
-In the recording below, you'll see that when I first tried to produce to a non-existent topic, it throws an error. However, after some time the message successfully publishes, creating a new topic.
-
+In the recording below, you’ll see that when I first tried to produce to a non-existent topic, it throws an error. However, after some time the message successfully publishes, creating a new topic.
 
 <Image
   src="/static/images/restrict-topic-auto-create-on-gmk/demo-1.gif"
@@ -36,16 +35,16 @@ In the recording below, you'll see that when I first tried to produce to a non-e
 
 ## Solution
 
-You can restrict auto-creation of topics on Google Managed Kafka by creating a service account and applying an ACL rule that denies `ALL` operations for `acl_id = “allTopics”`.
+You can restrict auto-creation of topics on Google Managed Kafka by creating a dummy service account and applying an ACL rule that denies `ALL` operations for `“allTopics”`.
 
 <Callout type="info">
 **Why does this work?**
 
 Google Managed Kafka operates with `allow.everyone.if.no.acl.found` property set to `true`.
 
-When no ACL is present for `acl_id = "allTopics"`, then access is enabled by default. As soon as you apply an ACL to this resource, then access becomes restricted.
+When no ACL is present for `acl_id = “allTopics”`, then access is enabled by default. As soon as you apply an ACL to this resource, access becomes restricted.
 
-You can read more about GMK's default access [here](https://docs.cloud.google.com/managed-service-for-apache-kafka/docs/access-control-kafka-acls#default-access).
+You can read more about GMK’s default access [here](https://docs.cloud.google.com/managed-service-for-apache-kafka/docs/access-control-kafka-acls#default-access).
 </Callout>
 
 ---
@@ -76,7 +75,7 @@ resource "google_managed_kafka_acl" "example" {
 }
 ```
 
-Once you've applied it, you'll see an unauthorised error when trying to publish to a non-existent topic.
+After you’ve applied it, you’ll see an unauthorised error when trying to publish to a non-existent topic.
 
 <Image
   src="/static/images/restrict-topic-auto-create-on-gmk/demo-2.gif"
@@ -86,3 +85,5 @@ Once you've applied it, you'll see an unauthorised error when trying to publish 
   unoptimized
   className="rounded-md border border-gray-200"
 />
+
+That’s all that's required. If you had another approach in mind, feel free to let me know in the comments below.
