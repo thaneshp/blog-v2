@@ -1,6 +1,6 @@
 ---
 title: Restrict topics from auto-creating on Google Managed Kafka
-date: '2026-02-09'
+date: '2026-02-10'
 tags: ['Cloud', 'GCP', 'Terraform']
 draft: false
 summary: How to restrict topics from auto-creating on Google Managed Kafka (GMK).
@@ -10,7 +10,7 @@ If you’ve used Google Managed Kafka (GMK), you might have noticed there is no 
 
 Disabling auto-creation of topics is typically managed by the server-side property `auto.create.topics.enable` on Apache Kafka, which Google Managed Kafka doesn’t expose to its users.
 
-Regardless, we can still restrict topics from auto-creating by configuring ACL rules; which I explain below.
+Regardless, we can still prevent topics from auto-creating by configuring ACL rules; which I explain below.
 
 ---
 
@@ -18,13 +18,15 @@ Regardless, we can still restrict topics from auto-creating by configuring ACL r
 
 Topics are automatically created when a client produces (or consumes) to Google Managed Kafka.
 
-This is actually a default feature of Apache Kafka, but it is often disabled as any client that has access to the cluster can create topics; which could have unintended behaviours.
+This is actually a default feature of Apache Kafka, but it is often disabled as any client that has access to the cluster can create topics; which could have unintended behaviours, such as:
+- messages/data going to a misspelled topic
+- lack of standardisation, i.e. naming conventions, partition count, replication factor, etc.
 
 In the recording below, you’ll see that when I try to produce to a non-existent topic, it first throws an error, but after some time the message successfully publishes. 
 
 <Image
   src="/static/images/restrict-topic-auto-create-on-gmk/demo-1.gif"
-  alt="Terminal session showing the unauthorized error when auto-creating topics"
+  alt="Terminal session showing successful publishing to a non-existent topic."
   width={624}
   height={480}
   unoptimized
@@ -40,7 +42,7 @@ You can restrict auto-creation of topics on Google Managed Kafka by creating a d
 <Callout type="info">
 **Why does this work?**
 
-Google Managed Kafka operates with `allow.everyone.if.no.acl.found` property set to `true`.
+Google Managed Kafka operates with the `allow.everyone.if.no.acl.found` property set to `true`.
 
 When no ACL is present for `“allTopics”`, then access is enabled by default. As soon as you apply an ACL to this resource, access becomes restricted.
 
@@ -79,7 +81,7 @@ After you’ve applied it, you’ll see an unauthorised error when trying to pub
 
 <Image
   src="/static/images/restrict-topic-auto-create-on-gmk/demo-2.gif"
-  alt="Terminal session showing the unauthorized error when auto-creating topics"
+  alt="Terminal session showing an unauthorized error when auto-creating topics."
   width={624}
   height={480}
   unoptimized
