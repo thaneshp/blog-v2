@@ -1,4 +1,6 @@
 {
+  "kubernetes": 1,
+  "linux": 1,
   "cloud": 2,
   "gcp": 1,
   "terraform": 1,

@@ -1,8 +1,86 @@
 ---
 title: Lessons Learnt from Building a K8s Homelab
-date: '2026-03-30'
-tags: ['K8s', 'Linux']
+date: '2026-03-31'
+tags: ['Kubernetes', 'Linux']
 draft: true
-summary: 
+summary: I set out to build a Kubernetes homelab and learnt lots along the way. 
 ---
 
+## Introduction
+
+I've been working with Google Kubernetes Engine (GKE) for some time now but felt that I was missing 
+
+I wanted to build a Kubernetes homelab so that I could learn some of its inner-workings and test things out without having to spin up a cluster on the cloud.
+
+As I started to put the pieces together, I gained a much greater appreciation for the abstractions that cloud hyperscalers provide.
+
+
+## Initial Approach
+
+The diagram below shows how I initially thought of setting things up. Whilst the architecture mostly stayed the same, there was a minor change I had to make along the way.
+
+<Image
+  src="/static/images/lessons-building-k8s-homelab/initial-approach.png"
+  alt="Architecture diagram showing overview of homelab setup."
+  width={624}
+  height={480}
+  unoptimized
+  className="rounded-md border border-gray-200"
+/>
+
+### Hardware
+
+I already has a Rasberry PI at home, and needed to get just one more machine with enough resources to run a Proxmox. I could have gone with another Raspberry Pi but this wouldn't have let me install a hypervisor on it and run VMs comfortably.
+
+```
+1 - Rasberry Pi 4
+1 - Dell Optiplex
+```
+
+### OS
+
+I knew I wanted to run Ubuntu across all nodes, as this open-source freely available Debian based Linux OS available.
+
+```
+Raspberry Pi - Ubuntu
+Dell Optiplex - Proxmox
+```
+
+### Infrastructure Automation
+
+Terraform to manage everything, as I already had familiariaty.
+
+Proxmox has a few available providers.
+
+```
+VM Provisioning - Terraform
+OS Package Management - Ansible
+```
+
+### Kubernetes Flavour
+
+```
+kubeadm
+Kubernetes v1.35.0
+```
+
+## Learnings
+
+### Lesson 1: Stability of Proxmox Terraform Providers
+
+### Lesson 2: Cloning VMs
+
+```
+dhcp:
+```
+
+### Lesson 3: Limitation of Raspberry Kernel
+
+`cgroup_disable=memory`
+
+### Lesson 4: Capacity Required for Kubernetes Master Node
+
+
+
+
+## Conclusion 
