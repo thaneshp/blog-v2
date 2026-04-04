@@ -1,6 +1,6 @@
 ---
 title: Lessons Learnt from Building a K8s Homelab
-date: '2026-03-31'
+date: '2026-04-05'
 tags: ['K8s', 'Homelab']
 draft: true
 summary: I set out to build a Kubernetes homelab and learnt lots along the way. 
@@ -8,16 +8,25 @@ summary: I set out to build a Kubernetes homelab and learnt lots along the way.
 
 ## Introduction
 
-I've been working with Google Kubernetes Engine (GKE) for some time now but felt that I was missing 
+I’ve been working with Google Kubernetes Engine (GKE) for some time now, but have always felt that I didn’t have a solid grasp on what’s happening under-the-hood.
 
-I wanted to build a Kubernetes homelab so that I could learn some of its inner-workings and test things out without having to spin up a cluster on the cloud.
+With the managed cloud offerings that are available today, it’s become easier than ever to build Kubernetes clusters (and other bits of infrastructure) without having to go into the weeds of things.
 
-As I started to put the pieces together, I gained a much greater appreciation for the abstractions that cloud hyperscalers provide.
+So, for my learning, I decided to build a Kubernetes cluster at home so that I could learn some of its inner-working and later use it to run experiments locally.
 
+As I started to put the pieces together, I gained a much greater appreciation for all the abstractions that cloud hyperscalers provide; and I’ll share why in this post.
+
+---
 
 ## Initial Approach
 
-The diagram below shows how I initially thought of setting things up. Whilst the architecture mostly stayed the same, there was a minor change I had to make along the way.
+I had an initial thought and decision-making process behind how I’d build out this cluster. There were a few overarching principles that guided my decision-making process:
+
+1. Cost-efficient: it should be cost-efficient to build/run.
+2. Scalable: I should be able to add nodes easily.
+3. Maintainable: I should be able to make changes easily.
+
+The diagram below shows how I initially thought of setting things up. In this section, I will share some of my thought process around each of the components I thought about.
 
 <Image
   src="/static/images/lessons-building-k8s-homelab/initial-approach.png"
@@ -30,57 +39,106 @@ The diagram below shows how I initially thought of setting things up. Whilst the
 
 ### Hardware
 
-I already has a Rasberry PI at home, and needed to get just one more machine with enough resources to run a Proxmox. I could have gone with another Raspberry Pi but this wouldn't have let me install a hypervisor on it and run VMs comfortably.
+Everything stems from the hardware, so this was the first piece of the puzzle I had to think about.
 
-```
-1 - Rasberry Pi 4
-1 - Dell Optiplex
-```
+I already had a Raspberry Pi 4 at home, so I just needed another machine that has enough resources to run Proxmox.
+
+Now I could have gone with another Raspberry Pi, but that wouldn’t have had enough juice to let me install a hypervisor and run VMs comfortably. So, I opted for a micro SFF PC which you can find used online for ~$150 AUD.
 
 ### OS
 
-I knew I wanted to run Ubuntu across all nodes, as this open-source freely available Debian based Linux OS available.
+For the most part, Kubernetes is suited to run on Linux. 
 
-```
-Raspberry Pi - Ubuntu
-Dell Optiplex - Proxmox
-```
+There were two options I was tossing up between:
+
+- Talos Linux - a minimal operating system for Kubernetes
+- Ubuntu Server - general purpose open-source Linux OS.
+
+I decided to go with Ubuntu Server for 2 key reasons: 
+
+1. There was known support for Raspberry Pi
+2. It allowed for SSH which I wanted for Ansible setup and debugging if necessary.
 
 ### Infrastructure Automation
 
-Terraform to manage everything, as I already had familiariaty.
+I knew from day 1 I wanted to have everything running using Infrastructure-as-Code in some shape or form for a few reasons:
 
-Proxmox has a few available providers.
+- Visibility - I know how my infrastructure looks without having to guess.
+- Consistency - VMs and configuration are the same across stack.
+- Maintainability - I can make easily make changes to any part of the stack.
 
-```
-VM Provisioning - Terraform
-OS Package Management - Ansible
-```
+Terraform and Ansible were the obvious choices for me here.
+- Terraform - because of my familiarity with the tool plus available providers for Proxmox.
+- Ansible - because of its known usage within the community for configuring VMs.
 
 ### Kubernetes Flavour
 
-```
-kubeadm
-Kubernetes v1.35.0
-```
+There were several Kubernetes flavours available for building homelabs, e.g. minikube & K3s.
+
+I wanted a flavour which was used for **real** workloads/settings, so I chose `kubeadm`. 
+
+As for the version, `v1.35.0` is the latest Kubernetes version as of writing, so it was the obvious choice.
 
 ## Learnings
 
-### Lesson 1: Stability of Proxmox Terraform Providers
+Once I had gathered all the details, I had a good idea of the plan in my head, but as I started to put things together, challenges popped-up which I didn’t expect.
 
-### Lesson 2: Cloning VMs
+However, each of those challenges provided some overarching lessons that I could take away.
 
-```
-dhcp:
-```
+### Lesson 1: It's worth setting things up properly from the get-go
 
-### Lesson 3: Limitation of Raspberry Kernel
+When I first started out of this journey, all I wanted to do was get to state where I could start installing `kubeadm` and get the cluster up and running.
 
-`cgroup_disable=memory`
+I knew I had to take a step back and set things up properly.
 
-### Lesson 4: Capacity Required for Kubernetes Master Node
+Fundamentally, I knew this was going to be a long-term setup and something I want to build upon over years and years. This means ensuring the system is maintainable.
 
+To ensure it is maintainable, means setitng things up right from the get-go, e.g.
 
+- Creating VM templates
+- Utilising Infrastructure-as-Code
+- Documenting everything
 
+This creates more upfront effort, but simplifies the process later on.
 
-## Conclusion 
+### Lesson 2: Understand the limitations of the tools you’re working with 
+
+Every technology has it's limitations.
+
+I went into building this cluster head first, after reading a few blogs and reddit posts.
+
+I knew all the tools I needed, but I didn't spend time understanding each of their limitations; which I ended up paying the price for.
+
+Some example of this are:
+1. Researching the different available Proxmox Terraform provider
+2. How to create VMs without having the OS installed each time
+3. Difference between allocated memory and available memory
+
+It's not possible to account for every scenario, some things just have to be learnt and experienced as you piece things together.
+
+However, the initial effort of laying out potential limitations would save time and frustration down the road.
+
+### Lesson 3: Always keep the end state in mind
+
+When you're putting together a cluster or building any technology, it's easy to get carried away in the tools.
+
+If you have a fixed idea of **how** you are going to build something, then you might spend more time than necessary trying to debug something when you could just cut your losses and move on to another tool.
+
+So, it's important to remember why you're building something so that you're not tied down to any specific tool/technology.
+
+## End Result
+
+This is what the end/current state looks like.
+
+It's more or less similar to the inital approach I pieced out with the exception that I moved the master node into the hypervisor; due to some complications I encountered with the Raspberry Pi kernel.
+
+For a **real** setup it isn't ideal, as if the entire Dell server goes down then the whole cluster is gone - but it'll do for a homelab.
+
+<Image
+  src="/static/images/lessons-building-k8s-homelab/end-state.png"
+  alt="Architecture diagram showing overview of homelab setup."
+  width={624}
+  height={480}
+  unoptimized
+  className="rounded-md border border-gray-200"
+/>

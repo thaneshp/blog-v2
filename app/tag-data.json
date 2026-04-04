@@ -1,6 +1,6 @@
 {
-  "kubernetes": 1,
-  "linux": 1,
+  "k8s": 1,
+  "homelab": 1,
   "cloud": 2,
   "gcp": 1,
   "terraform": 1,
