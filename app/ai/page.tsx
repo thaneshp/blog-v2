@@ -19,7 +19,8 @@ export default function AIPage() {
         <p>Everything on this website is written by me. I don&apos;t use AI to generate content.</p>
 
         <p>
-          I do use AI to help catch grammatical issues and improve clarity, so I treat it as an editing tool rather than a writing replacement.
+          I do use AI to help catch grammatical issues and improve clarity, so I treat it as an
+          editing tool rather than a writing replacement.
         </p>
 
         <p>
