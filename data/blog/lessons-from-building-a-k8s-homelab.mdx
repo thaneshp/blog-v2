@@ -3,7 +3,7 @@ title: Lessons Learnt from Building a K8s Homelab
 date: '2026-04-07'
 tags: ['K8s', 'Homelab']
 draft: false
-summary: I set out to build a Kubernetes homelab and learnt lots along the way. 
+summary: I built a Kubernetes cluster at home and picked up lessons that apply well beyond a lab.
 ---
 
 ## Introduction
@@ -14,7 +14,7 @@ With the cloud offerings that are available today, it’s become easier than eve
 
 As such, I built a Kubernetes homelab so that I could learn and experiment with some of its inner-workings from the ground-up.
 
-This post goes over my initial design process and the lessons I learnt post-build.
+This post goes over my experience building this homelab: from my initial thought process up to the lessons I learnt post-build.
 
 ---
 
@@ -65,12 +65,14 @@ I knew from day 1 I wanted to have everything running using Infrastructure-as-Co
 - Consistency - VMs and configurations are the same across the stack.
 - Maintainability - I can easily change any part of the stack.
 
-Terraform and Ansible were the obvious choices for me here.
+[Terraform](https://developer.hashicorp.com/terraform) and [Ansible](https://docs.ansible.com/) were the obvious choices for me here.
 
 - Terraform - because of my familiarity with the tool and provider availability.
 - Ansible - because of its known prevalence within the industry.
 
-If you're interested, you can check out all the code [here](https://github.com/thaneshp/homelab).
+<Callout type="info" title="">
+I've checked in all the code to github. If interested, you can check it out [here](https://github.com/thaneshp/homelab).
+</Callout>
 
 ### Kubernetes Flavour
 
@@ -108,10 +110,9 @@ Every technology has its limitations.
 
 I went into building this cluster head first, after reading a few blog and Reddit posts.
 
-I knew all the tools I needed, but I didn’t understand each of their limitations; which I ended up paying the price for.
+I knew all the tools I needed, but didn’t understand each of their limitations; which I ended up paying the price for.
 
-<Callout type="info">
-Some issues I encountered:
+<Callout type="note" title="Some issues I encountered">
 1. **The differences between how each of the Terraform providers connect with Proxmox**
   - I initially went with the [bpg](https://registry.terraform.io/providers/bpg/proxmox/latest/docs) provider, which used SSH and led to connectivity issues. I switched to [Telmate](https://registry.terraform.io/providers/Telmate/proxmox/latest/docs) (API) and didn’t encounter any issues.
 2. **Creating VMs without having the OS run installation steps each time**
@@ -128,17 +129,23 @@ In any case, the lesson is that the initial effort to lay out potential limitati
 
 When we’re building technology, it’s easy to get carried away in the tools.
 
-Sometimes we become fixed on the how to build something, instead of the why and what. When this happens, we might spend more time than necessary trying to debug or troubleshoot something when you could just cut your losses and move on with another approach.
+Sometimes we become fixed on the **how** to build something, instead of the **why** and **what**. When this happens, we might spend more time than necessary trying to debug or troubleshoot something when you could just cut your losses and move on with another approach.
 
-<Callout type="info">
+<Callout type="note" title="">
 In my experience, this was:
 - Troubleshooting SSH errors with the `bpg` Terraform provider, instead of moving on to another available provider.
 - Investigating how to enable memory `cgroups` on Raspberry Pis, instead of just creating another VM on Proxmox.
 </Callout>
 
-So ultimately, it’s important to remember why you’re building something so that you’re not tied down to any specific tool/technology and can make adjustments as necessary.
+So ultimately, it’s important to remember **why** you’re building something so that you’re not tied down to any specific tool/technology and can make adjustments as necessary.
 
-However, knowing when to *pivot* or *persevere* depends entirely on the scenario at hand.
+<Callout type="warning" title="Keep in mind">
+Knowing when to *pivot* or *persevere* depends entirely on the scenario at hand. Sometimes persevering is the right option given the circumstance.
+
+For example, in a real circumstance if there was heavy usage/investment for that particular tool/technology then persevering would likely be the right option; as finding an alternative and switching would likely require more effort in the short term.
+
+For a homelab context, switching is much easier as there isn't much impact.
+</Callout>
 
 ---
 
@@ -146,9 +153,9 @@ However, knowing when to *pivot* or *persevere* depends entirely on the scenario
 
 This is what the end/current state looks like.
 
-It’s more or less similar to my initial approach except I moved the control node into the hypervisor, i.e. because of the complications I experienced with the Raspberry Pi.
+It’s more or less similar to my initial approach, except I moved the control node into the hypervisor, i.e. because of the `cgroups` complications I experienced with the Raspberry Pi.
 
-For a **"real"** environment, this wouldn’t be ideal, as it creates a single point of failure at the Proxmox node.
+For a **"real"** environment, this wouldn’t be ideal, as it creates a single point of failure at the Proxmox node, i.e. if the node fails then the cluster is gone.
 
 But for a homelab, it’ll do just fine…
 
