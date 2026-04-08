@@ -39,9 +39,7 @@ In the recording below, you’ll see that when I try to produce to a non-existen
 
 You can restrict auto-creation of topics on Google Managed Kafka by creating a dummy service account and applying an ACL rule that denies `ALL` operations for `“allTopics”`.
 
-<Callout type="info">
-**Why does this work?**
-
+<Callout type="info" title="Why does this work?">
 Google Managed Kafka operates with the `allow.everyone.if.no.acl.found` property set to `true`.
 
 When no ACL is present for `“allTopics”`, then access is enabled by default. As soon as you apply an ACL to this resource, access becomes restricted.

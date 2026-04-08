@@ -1,0 +1,165 @@
+---
+title: Lessons Learnt from Building a K8s Homelab
+date: '2026-04-08'
+tags: ['K8s', 'Homelab']
+draft: false
+summary: I built a Kubernetes cluster at home and picked up lessons that apply well beyond a lab.
+---
+
+## Introduction
+
+I’ve been working with Google Kubernetes Engine (GKE) for some time now, and whilst doing so, I gained a solid grasp of how Kubernetes operates at the platform level.
+
+With the cloud offerings that are available today, it’s become easier than ever to build Kubernetes clusters (and other bits of infrastructure) without having to go too deep into how the underlying infrastructure operates.
+
+As such, I decided to build a Kubernetes homelab so that I could learn and experiment with some of its inner-workings from the ground-up.
+
+In this post, I go over my experience building this lab: from my initial thought process up to the lessons I learnt post-build.
+
+---
+
+## Initial Approach
+
+There were a few overarching principles that guided my initial decision-making process:
+
+1. Cost-efficient: it should be cost-efficient to build/run.
+2. Scalable: I should be able to add nodes easily.
+3. Maintainable: I should be able to make changes easily.
+
+The diagram below shows how I initially thought of the architecture. In this section, I’ll share some of my thoughts around each of the components I considered.
+
+<Image
+  src="/static/images/lessons-building-k8s-homelab/initial-approach.png"
+  alt="Architecture of the layout I initially had in mind."
+  width={624}
+  height={342}
+  unoptimized
+  className="rounded-md border border-gray-200"
+/>
+
+### Hardware
+
+Everything stems from the hardware, so this was the first piece of the puzzle I had to think about.
+
+I already had a Raspberry Pi 4 at home, so I just needed another machine that had enough resources (CPU/memory) to run Proxmox.
+
+Now, I could have gone with another Raspberry Pi, but that wouldn’t have let me install a hypervisor and run VMs comfortably. So, I opted for a micro SFF PC which I found used online for ~$150 AUD.
+
+### OS
+
+For the most part, Kubernetes works best on Linux. 
+
+There were two options I was tossing up between:
+
+- Talos Linux - a minimal operating system for Kubernetes
+- Ubuntu Server - a general-purpose, open-source Linux OS.
+
+I went with Ubuntu Server for 2 key reasons: 
+1. There was known support for Raspberry Pis.
+2. It allowed for SSH, which I wanted for Ansible and debugging if necessary.
+
+### Infrastructure Automation
+
+I knew from day 1 I wanted to have everything running using Infrastructure-as-Code (IaC) in some shape or form for a few reasons:
+- Visibility - I know how my infrastructure looks without having to guess.
+- Consistency - VMs and configurations are the same across the stack.
+- Maintainability - I can easily change any part of the stack.
+
+[Terraform](https://developer.hashicorp.com/terraform) and [Ansible](https://docs.ansible.com/) were the obvious choices for me here.
+
+- Terraform - because of my familiarity with the tool and provider availability.
+- Ansible - because of its agentless architecture and known prevalence within the industry.
+
+<Callout type="info" title="">
+I've checked in all the code to GitHub. If interested, you can check it out [here](https://github.com/thaneshp/homelab).
+</Callout>
+
+### Kubernetes Flavour
+
+There were several Kubernetes flavours available for building homelabs, e.g. [minikube](https://minikube.sigs.k8s.io/docs/) & [K3s](https://k3s.io/).
+
+I wanted a flavour which was used for **"real"** workloads/environments, so I chose [kubeadm](https://kubernetes.io/docs/reference/setup-tools/kubeadm/). 
+
+---
+
+## Learnings
+
+Once I had gathered an idea of everything, I started putting the pieces together from the ground-up (hardware -> OS -> IaC -> VMs -> K8s).
+
+I learnt a lot of little things along the way, but ultimately they fit into the 3 overarching lessons I describe below.
+
+### Lesson 1: Invest in maintainability early on
+
+When I first started out on this journey, all I wanted to do was get to the state where I could start installing `kubeadm` and get the cluster up and running.
+
+It was tempting to take shortcuts to move ahead; but ultimately, I knew this would cause rework for me down-the-line. So, I took a step back, thought about the problem, and laid the groundwork for what I was about to build.
+
+To me, this meant ensuring the system is maintainable over the long-term, i.e. by:
+
+- Creating re-usable VM templates
+- Utilising Infrastructure-as-Code
+- Documenting everything
+
+This created more upfront effort, but simplifies the process for me later on.
+
+### Lesson 2: Understand the limitations of the tools you’re working with 
+
+Every technology has its limitations.
+
+I went into building this cluster (almost) head first, after reading just a few blog and Reddit posts.
+
+I knew all the tools I needed, but didn’t understand each of their limitations; which I ended up paying the price for.
+
+<Callout type="note" title="Some issues I encountered">
+1. **The differences between how each of the Terraform providers connect with Proxmox**
+  - There are two main providers used for Proxmox: [bpg](https://registry.terraform.io/providers/bpg/proxmox/latest/docs) and [Telmate](https://registry.terraform.io/providers/Telmate/proxmox/latest/docs), and both utilise different ways of connecting (SSH vs. API). I initially went with `bpg` (SSH) and ran into connectivity issues. I switched to `Telmate` (API) and didn’t encounter any issues.
+2. **Creating new VMs without having the OS run installation steps each time**
+  - When you create new VMs with just the ISO, it runs the installation steps each time, meaning you need to go to the Proxmox console and complete the setup. This is not only tedious but makes it difficult to create new VMs on demand. However, this is easily solved by creating a VM template.
+3. **Difference between allocated memory and usable memory on VMs**
+  - Allocating 2GB of memory when creating a VM doesn’t guarantee that you will have exactly that amount; as the OS might consume some of that memory. As such, you'll need to allocate more than your required amount to account for this overhead.
+</Callout>
+
+In any case, it’s not possible to consider every scenario; and some things just have to be learnt and experienced as you piece things together. For example, I found countless examples where people ran K8s clusters on Raspberry Pis, but when I tried to install `kubeadm`, it failed because the memory `cgroups` was disabled by default.
+
+Ultimately, if I had laid out some of the potential limitations, it would have saved me time and reduced the frustration I encountered.
+
+### Lesson 3: Design around the end state
+
+When we’re building technology, it’s easy to get carried away in the tools.
+
+As engineers, we sometimes become fixated on the **how** to build something, instead of the **why** and **what**. When this happens, we might spend more time than necessary trying to debug or troubleshoot something when we could just cut our losses and move on with another approach.
+
+<Callout type="note" title="">
+In my experience, this was:
+- Troubleshooting SSH errors with the `bpg` Terraform provider, instead of moving on to `Telmate` sooner.
+- Investigating how to enable memory `cgroups` on Raspberry Pis, instead of just creating another VM on Proxmox.
+</Callout>
+
+So ultimately, it’s important to remember **why** you’re building something so that you’re not tied down to any specific tool/technology and can make adjustments as necessary.
+
+<Callout type="warning" title="Keep in mind">
+Knowing when to *pivot* or *persevere* depends entirely on the scenario at hand. Sometimes persevering might be the right option given the circumstances.
+
+For example, in a real environment, if there was heavy usage/investment in a particular tool/technology, then persevering would likely be the right option; as finding an alternative and switching would require more resources (time/effort/money) in the short-medium term.
+</Callout>
+
+---
+
+## End Result
+
+This is what the end/current state looks like.
+
+It’s more or less similar to my initial approach, except I moved the control node into the hypervisor, i.e. because of the `cgroups` complications I experienced with the Raspberry Pi.
+
+For a **"real"** environment, this wouldn’t be recommended, as it creates a single point of failure at the Proxmox node; i.e. if that node fails, then the cluster is gone.
+
+But for a homelab, it’ll do just fine…
+
+<Image
+  src="/static/images/lessons-building-k8s-homelab/end-result.png"
+  alt="Architecture diagram of the end result."
+  width={624}
+  height={341}
+  unoptimized
+  className="rounded-md border border-gray-200"
+/>
