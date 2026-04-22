@@ -3,9 +3,9 @@
   "homelab": 1,
   "ai": 3,
   "llms": 2,
+  "gcp": 2,
+  "cloud": 3,
+  "terraform": 2,
   "mcp": 1,
-  "python": 1,
-  "cloud": 2,
-  "gcp": 1,
-  "terraform": 1
+  "python": 1
 }
