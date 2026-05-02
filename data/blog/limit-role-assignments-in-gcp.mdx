@@ -1,0 +1,100 @@
+---
+title: Limit Role Assignments in Google Cloud
+date: '2026-05-02'
+tags: ['GCP', 'Cloud', 'Terraform']
+draft: false
+summary: How to use IAM conditions to safely delegate role management in Google Cloud.
+---
+
+If you’re familiar with GCP, you’ll know that the [roles/resourcemanager.projectIamAdmin](https://docs.cloud.google.com/resource-manager/docs/access-control-proj#resourcemanager.projectIamAdmin) role is used for granting project-level roles.
+
+This makes it useful in projects where engineers or developers need to grant IAM roles to service accounts, groups, or other members without waiting on another team for every access change.
+
+However, this predefined role is highly permissive. If granted without guardrails, it can allow the same principal to grant roles far beyond the scope of their function.
+
+---
+
+## What is the risk?
+
+Say you manage a GCP project where different people handle different parts of the stack, i.e., compute, database, etc.
+
+Each group may need a different set of permissions to provision their respective resources, along with additional permissions to grant roles.
+
+For example, a compute team might need the following roles for managing Google Kubernetes Engine (GKE) resources:
+
+- `roles/container.admin` - for provisioning and maintaining the cluster
+- `roles/resourcemanager.projectIamAdmin` - for assigning permissions to members who need access to the cluster
+
+**The risk is:** if you’re assigning the `roles/resourcemanager.projectIamAdmin` role to the compute team, this also gives them permission to modify the project IAM policy, including granting more permissive roles to themselves or others.
+
+Fundamentally, this breaks the **principle of least privilege** and increases the **risk of privilege escalation**.
+
+So the question is: **how can you give members the required level of permission to grant new roles while limiting which roles they are allowed to grant?**
+
+---
+
+## Solution
+
+One way to solve this is to delegate IAM administration with IAM Conditions.
+
+The pattern is to grant `roles/resourcemanager.projectIamAdmin` conditionally, so the principal can only grant or revoke a specific list of approved roles.
+
+This preserves the self-service workflow while reducing the blast radius of the delegated administrator identity.
+
+<Callout type="note">
+The core idea here is the concept of [least privilege](https://en.wikipedia.org/wiki/Principle_of_least_privilege).
+
+The principal should have enough access to perform the required workflow, but not enough access to grant unrelated or more privileged roles.
+</Callout>
+
+---
+
+## Implementation
+
+The Terraform implementation looks something like below.
+
+```hcl
+resource "google_project_iam_binding" "delegated_gke_iam_admin" {
+  project = "your-project-id"
+  role    = "roles/resourcemanager.projectIamAdmin"
+
+  members = [
+    "serviceAccount:your-service-account@your-project-id.iam.gserviceaccount.com",
+  ]
+
+  # Here is where you scope the permissions to only grant the required roles.
+  condition {
+    title       = "gke_roles_only"
+    description = "Allow this principal to grant or revoke only approved GKE roles."
+    expression  = <<EOT
+api.getAttribute(
+  'iam.googleapis.com/modifiedGrantsByRole',
+  []
+).hasOnly([
+  'roles/container.developer',
+  'roles/container.clusterViewer'
+])
+EOT
+  }
+}
+```
+
+Once applied, the service account will be able to grant the explicitly listed roles, but will not have permission to grant anything else.
+
+<Callout type="warning">
+This condition limits which roles the principal can grant or revoke. It does not decide who those roles should be granted to, so the surrounding workflow still needs review and approval controls.
+</Callout>
+
+The example above uses GKE roles, but the same pattern can be applied to other delegated workflows where a CI/CD identity needs to grant a narrow set of approved roles.
+
+---
+
+<Callout type="info" title="Real World Use Case">
+A similar pattern came up in one of the projects I worked on involving Cloud SQL.
+
+In this project, we created a Cloud SQL instance and gave developers a self-service workflow for requesting database creation via GitHub pull request process.
+
+To ensure developers and other requesters couldn’t elevate their permissions or apply unrelated roles, we scoped the CI service account used by the GitHub Actions workflow so it could only grant the approved connectivity role: `roles/cloudsql.client`.
+
+The approver is still responsible for validating that the request stays within the scope of the workflow, but this control adds a technical guardrail in case something is missed during review.
+</Callout>
