@@ -2,6 +2,7 @@
   "gcp": 2,
   "cloud": 3,
   "terraform": 2,
+  "iam": 1,
   "k8s": 1,
   "homelab": 1,
   "ai": 3,
